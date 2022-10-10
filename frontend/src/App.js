@@ -16,6 +16,12 @@ const App = () => {
       const decodedData = JSON.parse(e.data);
 
       switch (decodedData.type) {
+        case 'CONNECTED':
+          setState(prev => ({
+            ...prev,
+            pixelsArray: [...decodedData.array]
+          }));
+          break;
         case 'NEW_DATA_CANVAS':
           // console.log(decodedData.array);
           setState(prev => ({

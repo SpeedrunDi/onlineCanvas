@@ -18,6 +18,11 @@ app.ws('/canvas', (ws) => {
   console.log('Client connected id=', id);
   activeConnections[id] = ws;
 
+  ws.send(JSON.stringify({
+    type: 'CONNECTED',
+    array: arrayCanvas
+  }));
+
   ws.on('close', () => {
     console.log('Client disconnected! id=', id);
     delete activeConnections[id];
@@ -42,7 +47,6 @@ app.ws('/canvas', (ws) => {
       default:
         console.log('Unknown data type:', decodedData.type);
     }
-    console.log(arrayCanvas);
   });
 });
 
