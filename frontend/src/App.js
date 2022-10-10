@@ -12,8 +12,37 @@ const App = () => {
   useEffect(() => {
     ws.current = new WebSocket('ws://localhost:8000/canvas');
 
+    ws.current.onmessage = e => {
+      const decodedData = JSON.parse(e.data);
 
+      switch (decodedData.type) {
+        case 'NEW_DATA_CANVAS':
+          // console.log(decodedData.array);
+          setState(prev => ({
+            ...prev,
+            pixelsArray: [...decodedData.array]
+          }));
+          break;
+        default:
+          console.log('Unknown data type:', decodedData.type);
+      }
+    };
   }, []);
+
+  useEffect(() => {
+    const context = canvas.current.getContext('2d');
+    const imageData = context.createImageData(1, 1);
+    const d = imageData.data;
+
+    d[0] = 0;
+    d[1] = 0;
+    d[2] = 0;
+    d[3] = 255;
+
+    state.pixelsArray.forEach(data => {
+      context.putImageData(imageData, data.x, data.y)
+    });
+  }, [state.pixelsArray]);
 
   const canvasMouseMoveHandler = event => {
     if (state.mouseDown) {
@@ -47,7 +76,10 @@ const App = () => {
   };
 
   const mouseUpHandler = () => {
-    ws.current.send(JSON.stringify(state.pixelsArray));
+    ws.current.send(JSON.stringify({
+      type: 'CREATE_CANVAS',
+      array: state.pixelsArray
+    }));
     // Где-то здесь отправлять массив пикселей на сервер
     setState({...state, mouseDown: false, pixelsArray: []});
   };

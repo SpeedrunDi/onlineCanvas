@@ -24,7 +24,24 @@ app.ws('/canvas', (ws) => {
   });
 
   ws.on('message', array => {
-    arrayCanvas.push(...JSON.parse(array));
+    const decodedData = JSON.parse(array);
+
+    switch (decodedData.type) {
+      case 'CREATE_CANVAS':
+        arrayCanvas.push(...decodedData.array);
+
+        Object.keys(activeConnections).forEach(connectId => {
+          const user = activeConnections[connectId];
+
+          user.send(JSON.stringify({
+            type: 'NEW_DATA_CANVAS',
+            array: arrayCanvas
+          }));
+        });
+        break;
+      default:
+        console.log('Unknown data type:', decodedData.type);
+    }
     console.log(arrayCanvas);
   });
 });
